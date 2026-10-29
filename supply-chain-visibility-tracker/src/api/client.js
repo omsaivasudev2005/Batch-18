@@ -1,8 +1,16 @@
 import axios from 'axios'
 
 const client = axios.create({
-  baseURL: process.env.VITE_API_URL || '/',
+  baseURL: import.meta.env.VITE_API_URL || '/',
   headers: { 'Content-Type': 'application/json' },
 })
+
+export function setAccessToken(token) {
+  if (token) {
+    client.defaults.headers.common.Authorization = `Bearer ${token}`
+  } else {
+    delete client.defaults.headers.common.Authorization
+  }
+}
 
 export default client

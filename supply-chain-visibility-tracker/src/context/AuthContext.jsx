@@ -1,22 +1,49 @@
-import React, { createContext, useState, useContext } from 'react'
+import { useState } from 'react'
+import { setAccessToken } from '../api/client'
+import AuthContext from './auth-context'
 
-const AuthContext = createContext(null)
+const roleDetails = {
+  admin: { apiRole: 'ADMIN' },
+  manufacturer: {
+    apiRole: 'PRODUCT_MANUFACTURER',
+  },
+  warehouse: {
+    apiRole: 'WAREHOUSE_MANAGER',
+  },
+  retailer: { apiRole: 'RETAILER' },
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
 
-  const login = (u) => setUser(u)
-  const logout = () => setUser(null)
+  async function login(credentials, requiredRole) {
+    const role = roleDetails[requiredRole]
+    if (!role) {
+      throw new Error('Choose a valid user type before signing in.')
+    }
+
+    const email = credentials.email?.trim()
+    if (!email) {
+      throw new Error('Enter an email address to continue.')
+    }
+
+    setAccessToken(null)
+    setUser({
+      email,
+      role: role.apiRole,
+    })
+  }
+
+  function logout() {
+    setAccessToken(null)
+    setUser(null)
+  }
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuthContext() {
-  return useContext(AuthContext)
 }
 
 export default AuthContext
